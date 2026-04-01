@@ -39,7 +39,27 @@ async def create_booking(
             detail="Места на это занятие закончились"
         )
 
-    # Создаем запись
+    # Проверяем, есть ли уже такая запись
+    existing_query = select(Booking).where(
+        Booking.lesson_id == lesson.id,
+        Booking.student_id == booking.student_id
+    )
+    existing_res = await session.execute(existing_query)
+    existing_booking = existing_res.scalar_one_or_none()
+
+    if existing_booking:
+        if existing_booking.status == BookingStatusEnum.active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="У вас уже есть активная запись на это занятие"
+            )
+        # Если статус cancelled, просто восстанавливаем
+        existing_booking.status = BookingStatusEnum.active
+        await session.commit()
+        await session.refresh(existing_booking)
+        return existing_booking
+
+    # Создаем новую запись, если ее не было
     new_booking = Booking(
         student_id=booking.student_id,
         lesson_id=booking.lesson_id,
@@ -51,12 +71,12 @@ async def create_booking(
         await session.commit()
         await session.refresh(new_booking)
         return new_booking
-    except Exception:
-        # Здесь сработает UniqueConstraint, если студент нажал кнопку дважды
+    except Exception as e:
+        # Резервный случай
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Вы уже записаны на это занятие"
+            detail=f"Ошибка системной записи: {str(e)}"
         )
 
 @router.patch("/{booking_id}/status", summary="Изменить статус записи (Для Персонала)", description="Позволяет преподавателю или администратору изменить статус записи (например, подтвердить или отменить). Учитель может менять только свои записи.", response_model=BookingResponse)
@@ -87,7 +107,10 @@ async def get_my_bookings(
 ):
     query = select(Booking).where(
         Booking.student_id == current_student.id
-    ).options(selectinload(Booking.lesson))
+    ).options(
+        selectinload(Booking.lesson).selectinload(Lesson.teacher),
+        selectinload(Booking.lesson).selectinload(Lesson.language)
+    )
     result = await session.execute(query)
     return result.scalars().all()
 

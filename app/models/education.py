@@ -53,6 +53,18 @@ class Lesson(Base):
     language: Mapped["Language"] = relationship("Language", back_populates="lessons")
     bookings: Mapped[list["Booking"]] = relationship("Booking", back_populates="lesson", cascade="all, delete-orphan")
 
+    @property
+    def teacher_name(self) -> str | None:
+        if self.teacher:
+            return f"{self.teacher.first_name or ''} {self.teacher.last_name or ''}".strip()
+        return None
+
+    @property
+    def language_name(self) -> str | None:
+        if self.language:
+            return self.language.name
+        return None
+
 class Booking(Base):
     __tablename__ = "bookings"
 

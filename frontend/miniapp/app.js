@@ -358,8 +358,8 @@ async function loadAvailableLessons() {
     const container = document.getElementById('available-list');
     if (!container) return;
 
-    if (!state.selectedBookingDate && !state.selectedLanguageId && !state.selectedTeacherId) {
-        container.innerHTML = '<p class="filter-hint">Выберите параметры выше</p>';
+    if (!state.selectedLanguageId || !state.selectedTeacherId || !state.selectedBookingDate) {
+        container.innerHTML = '<p class="filter-hint">Выберите язык, преподавателя и дату</p>';
         return;
     }
 
@@ -370,8 +370,12 @@ async function loadAvailableLessons() {
         if (state.selectedTeacherId) params.set('teacher_id', state.selectedTeacherId);
         if (state.selectedBookingDate) {
             const d = state.selectedBookingDate;
-            params.set('date_from', d.toISOString().split('T')[0]);
-            params.set('date_to', d.toISOString().split('T')[0]);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const localDateStr = `${year}-${month}-${day}`;
+            params.set('date_from', localDateStr);
+            params.set('date_to', localDateStr);
         }
         const lessons = await apiFetch(`/lessons/?${params}`);
         const filtered = state.selectedLanguageId

@@ -1,7 +1,7 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, cast, Date
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from app.core.database import get_async_session
@@ -92,11 +92,15 @@ async def get_lessons(
     if teacher_id:
         query = query.where(Lesson.teacher_id == teacher_id)
     if date_from:
-        query = query.where(Lesson.start_time >= date_from)
+        query = query.where(cast(Lesson.start_time, Date) >= date_from)
     if date_to:
-        query = query.where(Lesson.start_time <= date_to)
+        query = query.where(cast(Lesson.start_time, Date) <= date_to)
 
-    query = query.order_by(Lesson.start_time).options(selectinload(Lesson.bookings))
+    query = query.order_by(Lesson.start_time).options(
+        selectinload(Lesson.bookings),
+        selectinload(Lesson.teacher),
+        selectinload(Lesson.language)
+    )
     result = await session.execute(query)
     lessons = result.scalars().all()
     

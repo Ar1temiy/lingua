@@ -35,6 +35,8 @@ class LessonResponse(BaseModel):
     start_time: datetime
     end_time: datetime
     status: LessonStatusEnum
+    teacher_name: str | None = None
+    language_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -204,6 +204,14 @@ button {
   color: var(--on-bg);
 }
 
+.section-title:not(.filter-title) {
+  margin-bottom: 16px;
+}
+
+.section-title-row .section-title {
+  margin-bottom: 0;
+}
+
 .section-subtitle {
   font-size: 13px;
   font-weight: 600;
@@ -349,7 +357,7 @@ button {
   padding: 18px 18px 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   animation: fadeUp 0.3s ease both;
   position: relative;
   overflow: hidden;
@@ -538,7 +546,7 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   animation: fadeUp 0.25s ease both;
 }
 
@@ -804,13 +812,9 @@ button {
   transform: translateX(-50%) translateY(0);
 }
 
-.toast.success {
-  border-left: 3px solid var(--secondary);
-}
+.toast.success {}
 
-.toast.error {
-  border-left: 3px solid var(--tertiary);
-}
+.toast.error {}
 
 /* ─── Modal ──────────────────────────────────────────── */
 .modal-overlay {
