@@ -1,0 +1,38 @@
+# Локальные переменные окружения и секреты (КРИТИЧНО!)
+.env
+.env.*
+!.env.example
+
+# Виртуальное окружение
+.venv/
+venv/
+env/
+
+# Логи
+*.log
+uvicorn.log
+lhr.log
+
+# Кэш Python и скомпилированные файлы
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+.pytest_cache/
+
+# Настройки IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Базы данных
+*.sqlite3
+*.db
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+#мусор
+zapusk.md

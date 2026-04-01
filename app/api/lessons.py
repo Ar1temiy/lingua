@@ -14,7 +14,7 @@ from datetime import date
 
 router = APIRouter(prefix="/lessons", tags=["Расписание (Занятия)"])
 
-@router.post("/", response_model=LessonResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", summary="Создать новое занятие (Для Персонала)", description="Преподаватели создают занятия для себя. Администраторы могут создавать занятия для любого преподавателя. Проверяет накладки по времени и соответствие языку преподавателя.", response_model=LessonResponse, status_code=status.HTTP_201_CREATED)
 async def create_lesson(
     lesson: LessonCreate,
     session: AsyncSession = Depends(get_async_session),
@@ -79,7 +79,7 @@ async def create_lesson(
     return new_lesson
 
 #получаем все занятия
-@router.get("/", response_model=List[LessonStudentResponse])
+@router.get("/", summary="Расписание занятий", description="Получить список всех доступных занятий с опциональной фильтрацией по датам и преподавателю. Возвращает информацию о наличии свободных мест и статусе записи студента.", response_model=List[LessonStudentResponse])
 async def get_lessons(
         teacher_id: Optional[uuid.UUID] = None,
         date_from: Optional[date] = None,
@@ -116,7 +116,7 @@ async def get_lessons(
         
     return response
 
-@router.get("/{lesson_id}/students", response_model=List[StudentResponse])
+@router.get("/{lesson_id}/students", summary="Список студентов на занятии (Для Персонала)", description="Возвращает список студентов, которые активно записаны на конкретное занятие.", response_model=List[StudentResponse])
 async def get_lesson_students(
     lesson_id: uuid.UUID,
     session: AsyncSession = Depends(get_async_session),
@@ -138,7 +138,7 @@ async def get_lesson_students(
     res = await session.execute(student_query)
     return res.scalars().all()
 
-@router.patch("/{lesson_id}/status", response_model=LessonResponse)
+@router.patch("/{lesson_id}/status", summary="Изменить статус занятия (Для Персонала)", description="Позволяет отменить занятие или перевести его в статус 'завершено'.", response_model=LessonResponse)
 async def update_lesson_status(
     lesson_id: uuid.UUID,
     status_update: LessonStatusUpdate,

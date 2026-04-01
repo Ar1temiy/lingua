@@ -10,7 +10,7 @@ from app.schemas.education import LanguageCreate, LanguageResponse
 router = APIRouter(prefix="/languages", tags=["Языки"])
 
 
-@router.post("/", response_model=LanguageResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", summary="Добавить язык", description="Добавляет новый язык в глобальный справочник школы.", response_model=LanguageResponse, status_code=status.HTTP_201_CREATED)
 async def create_language(
         language: LanguageCreate,
         session: AsyncSession = Depends(get_async_session)
@@ -36,7 +36,7 @@ async def create_language(
     return new_language
 
 
-@router.get("/", response_model=List[LanguageResponse])
+@router.get("/", summary="Список языков", description="Возвращает список всех доступных языков.", response_model=List[LanguageResponse])
 async def get_languages(session: AsyncSession = Depends(get_async_session)):
     query = select(Language)
     result = await session.execute(query)

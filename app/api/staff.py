@@ -15,7 +15,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 router = APIRouter(prefix="/staff", tags=["Персонал (Учителя и Админы)"])
 
 
-@router.post("/", response_model=StaffResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", summary="Создать профиль сотрудника (Админ)", description="Регистрация нового преподавателя или администратора. Эта ручка доступна только пользователям с ролью `admin`.", response_model=StaffResponse, status_code=status.HTTP_201_CREATED)
 async def create_staff(
         staff: StaffCreate,
         session: AsyncSession = Depends(get_async_session)
@@ -51,14 +51,14 @@ async def create_staff(
     return new_staff
 
 
-@router.get("/", response_model=List[StaffResponse])
+@router.get("/", summary="Список преподавателей", description="Возвращает публичный список всех преподавателей с подгруженным массивом языков, которые они преподают. Используется фронтендом для выпадающих списков.", response_model=List[StaffResponse])
 async def get_all_staff(session: AsyncSession = Depends(get_async_session)):
     query = select(Staff).options(selectinload(Staff.languages))
     result = await session.execute(query)
     return result.scalars().all()
 
 
-@router.post("/{staff_id}/languages/{language_id}", response_model=StaffResponse)
+@router.post("/{staff_id}/languages/{language_id}", summary="Привязать язык к преподавателю (Админ)", description="Добавляет специализацию (язык) для конкретного преподавателя.", response_model=StaffResponse)
 async def assign_language_to_teacher(
     staff_id: uuid.UUID,
     language_id: uuid.UUID,
@@ -92,7 +92,7 @@ async def assign_language_to_teacher(
 
     return teacher
 
-@router.post("/login", response_model=Token)
+@router.post("/login", summary="Авторизация персонала (Вход)", description="Классический вход по `email` и `password`. Возвращает JWT токен, который нужно передавать в заголовке `Authorization: Bearer <токен>`.", response_model=Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_async_session)
@@ -110,7 +110,7 @@ async def login_for_access_token(
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.get("/me", response_model=StaffResponse)
+@router.get("/me", summary="Мой профиль (Персонал)", description="Получить данные текущего авторизованного сотрудника (себя).", response_model=StaffResponse)
 async def read_staff_me(
     current_staff: Staff = Depends(get_current_staff)
 ):

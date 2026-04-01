@@ -10,7 +10,7 @@ from app.schemas.users import UserVKAuth, StudentResponse
 
 router = APIRouter(prefix="/students", tags=["Студенты (VK)"])
 
-@router.post("/auth", response_model=StudentResponse)
+@router.post("/auth", summary="Авторизация через VK Mini App", description="Авторизует студента по строке запуска VK (`vk_launch_params`). Создает профиль при первом входе, обновляет имя при последующих входах.", response_model=StudentResponse)
 async def authenticate_vk_student( #проверка подписи вк
         auth_data: UserVKAuth,
         session: AsyncSession = Depends(get_async_session)):

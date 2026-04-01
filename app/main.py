@@ -9,10 +9,13 @@ from app.api.staff import router as staff_router
 from app.api.lessons import router as lessons_router
 from app.api.bookings import router as booking_router
 
+from app.core.docs import api_description, tags_metadata
+
 app = FastAPI(
-    title="Lingua School API",
-    description="Бэкенд для VK Mini App языковой школы",
-    version="1.0.0"
+    title="Lingua School API 🎓",
+    description=api_description,
+    version="1.0.0",
+    openapi_tags=tags_metadata
 )
 
 app.add_middleware(

@@ -12,7 +12,7 @@ from app.schemas.bookings import BookingCreate, BookingResponse, BookingStatusUp
 
 router = APIRouter(prefix="/bookings", tags=["Записи на занятия"])
 
-@router.post("/", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", summary="Записаться на занятие", description="Позволяет студенту записаться на конкретное занятие. Занимает 1 место в группе. При превышении лимита вернет ошибку.", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
 async def create_booking(
     booking: BookingCreate,
     session: AsyncSession = Depends(get_async_session)
@@ -59,7 +59,7 @@ async def create_booking(
             detail="Вы уже записаны на это занятие"
         )
 
-@router.patch("/{booking_id}/status", response_model=BookingResponse)
+@router.patch("/{booking_id}/status", summary="Изменить статус записи (Для Персонала)", description="Позволяет преподавателю или администратору изменить статус записи (например, подтвердить или отменить). Учитель может менять только свои записи.", response_model=BookingResponse)
 async def update_booking_status(
     booking_id: uuid.UUID,
     status_update: BookingStatusUpdate,
@@ -80,7 +80,7 @@ async def update_booking_status(
     await session.refresh(booking)
     return booking
 
-@router.get("/my", response_model=List[BookingDetailResponse])
+@router.get("/my", summary="Мои записи (VK)", description="Возвращает список всех записей (и активных, и отмененных) для текущего авторизованного студента VK.", response_model=List[BookingDetailResponse])
 async def get_my_bookings(
     session: AsyncSession = Depends(get_async_session),
     current_student: Student = Depends(get_current_student)
@@ -91,7 +91,7 @@ async def get_my_bookings(
     result = await session.execute(query)
     return result.scalars().all()
 
-@router.patch("/{booking_id}/cancel", response_model=BookingResponse)
+@router.patch("/{booking_id}/cancel", summary="Отменить свою запись (VK)", description="Студент может самостоятельно отменить свою активную запись на занятие. Статус поменяется на `cancelled_by_student`.", response_model=BookingResponse)
 async def cancel_my_booking(
     booking_id: uuid.UUID,
     session: AsyncSession = Depends(get_async_session),
