@@ -6,9 +6,11 @@ import uuid
 from sqlalchemy.orm import selectinload
 from app.models.education import Language
 from app.core.database import get_async_session
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, verify_password, create_access_token
+from app.core.dependencies import get_current_staff, get_current_active_admin
 from app.models.users import Staff
-from app.schemas.users import StaffCreate, StaffResponse
+from app.schemas.users import StaffCreate, StaffResponse, Token
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(prefix="/staff", tags=["Персонал (Учителя и Админы)"])
 
@@ -20,7 +22,7 @@ async def create_staff(
 ):
 
     #Проверяем, не занят ли email
-    query = select(Staff).where(Staff.email == staff.email)
+    query = select(Staff).where(Staff.email == staff.email).options(selectinload(Staff.languages))
     result = await session.execute(query)
     if result.scalar_one_or_none():
         raise HTTPException(
@@ -41,7 +43,10 @@ async def create_staff(
 
     session.add(new_staff)
     await session.commit()
-    await session.refresh(new_staff)
+    #чтобы не было ошибки LazyLoad
+    query = select(Staff).where(Staff.id == new_staff.id).options(selectinload(Staff.languages))
+    result = await session.execute(query)
+    new_staff = result.scalar_one()
 
     return new_staff
 
@@ -86,3 +91,27 @@ async def assign_language_to_teacher(
     await session.refresh(teacher)
 
     return teacher
+
+@router.post("/login", response_model=Token)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: AsyncSession = Depends(get_async_session)
+):
+    query = select(Staff).where(Staff.email == form_data.username)
+    result = await session.execute(query)
+    user = result.scalar_one_or_none()
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверный email или пароль",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token = create_access_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=StaffResponse)
+async def read_staff_me(
+    current_staff: Staff = Depends(get_current_staff)
+):
+    return current_staff

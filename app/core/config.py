@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
     VK_APP_SECRET: str
+    SECRET_KEY: str = "secret"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080 # 7 days
 
     @property
     def database_url_async(self) -> str:

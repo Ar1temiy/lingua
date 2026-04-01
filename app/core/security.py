@@ -5,6 +5,8 @@ from urllib.parse import urlencode, parse_qsl
 from .config import settings
 from passlib.context import CryptContext
 import bcrypt
+import jwt
+from datetime import datetime, timedelta, timezone
 
 ''''Авторизация в вк'''
 def is_valid_vk_query(query_string: str) -> bool:
@@ -38,3 +40,13 @@ def verify_password(original_password: str, hashed_password: str) -> bool:
     password_bytes = original_password.encode('utf-8')
     hash_bytes = hashed_password.encode('utf-8')
     return bcrypt.checkpw(password_bytes, hash_bytes)
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return encoded_jwt

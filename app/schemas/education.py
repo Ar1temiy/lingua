@@ -19,7 +19,7 @@ class LanguageResponse(BaseModel):
 
 
 class LessonCreate(BaseModel):
-    teacher_id: uuid.UUID
+    teacher_id: uuid.UUID | None = None
     language_id: uuid.UUID
     type: LessonTypeEnum
     capacity: int = 1
@@ -37,3 +37,10 @@ class LessonResponse(BaseModel):
     status: LessonStatusEnum
 
     model_config = ConfigDict(from_attributes=True)
+
+class LessonStudentResponse(LessonResponse):
+    available_slots: int
+    is_booked_by_me: bool
+
+class LessonStatusUpdate(BaseModel):
+    status: LessonStatusEnum

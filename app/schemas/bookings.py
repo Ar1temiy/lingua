@@ -27,5 +27,7 @@ class BookingDetailResponse(BaseModel):
     created_at: datetime
     # Магия Pydantic: мы вкладываем одну схему в другую
     lesson: LessonResponse
-
     model_config = ConfigDict(from_attributes=True)
+
+class BookingStatusUpdate(BaseModel):
+    status: BookingStatusEnum

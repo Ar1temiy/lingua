@@ -20,6 +20,10 @@ class StudentResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 
 #Схема для СОЗДАНИЯ сотрудника
 class StaffCreate(BaseModel):
