@@ -1,0 +1,88 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from typing import List
+import uuid
+from sqlalchemy.orm import selectinload
+from app.models.education import Language
+from app.core.database import get_async_session
+from app.core.security import get_password_hash
+from app.models.users import Staff
+from app.schemas.users import StaffCreate, StaffResponse
+
+router = APIRouter(prefix="/staff", tags=["Персонал (Учителя и Админы)"])
+
+
+@router.post("/", response_model=StaffResponse, status_code=status.HTTP_201_CREATED)
+async def create_staff(
+        staff: StaffCreate,
+        session: AsyncSession = Depends(get_async_session)
+):
+
+    #Проверяем, не занят ли email
+    query = select(Staff).where(Staff.email == staff.email)
+    result = await session.execute(query)
+    if result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Сотрудник с таким email уже существует"
+        )
+
+    #хешируем пароль
+    hashed_password = get_password_hash(staff.password)
+
+    new_staff = Staff(
+        email=staff.email,
+        hashed_password=hashed_password,
+        first_name=staff.first_name,
+        last_name=staff.last_name,
+        role=staff.role
+    )
+
+    session.add(new_staff)
+    await session.commit()
+    await session.refresh(new_staff)
+
+    return new_staff
+
+
+@router.get("/", response_model=List[StaffResponse])
+async def get_all_staff(session: AsyncSession = Depends(get_async_session)):
+    query = select(Staff).options(selectinload(Staff.languages))
+    result = await session.execute(query)
+    return result.scalars().all()
+
+
+@router.post("/{staff_id}/languages/{language_id}", response_model=StaffResponse)
+async def assign_language_to_teacher(
+    staff_id: uuid.UUID,
+    language_id: uuid.UUID,
+    session: AsyncSession = Depends(get_async_session)
+):
+    #Ищем преподавателя подгружаем его языки
+    query = select(Staff).where(Staff.id == staff_id).options(selectinload(Staff.languages))
+    result = await session.execute(query)
+    teacher = result.scalar_one_or_none()
+
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Преподаватель не найден")
+
+
+    #ищем язык
+    language_query = select(Language).where(Language.id == language_id)
+    language_res = await session.execute(language_query)
+    language = language_res.scalar_one_or_none()
+
+    if not language:
+        raise HTTPException(status_code=404, detail="Язык не найден")
+
+    if language in teacher.languages:
+        raise HTTPException(status_code=400, detail="Этот язык уже назначен данному преподавателю")
+
+    #Добавляем язык в список
+    teacher.languages.append(language)
+
+    await session.commit()
+    await session.refresh(teacher)
+
+    return teacher
