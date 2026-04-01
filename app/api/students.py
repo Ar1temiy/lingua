@@ -28,7 +28,7 @@ async def authenticate_vk_student( #проверка подписи вк
     result = await session.execute(query)
     student = result.scalar_one_or_none()  #Student или None
 
-    #если студента нет в базе создаем его
+    # если студента нет в базе создаем его
     if student is None:
         student = Student(
             vk_id=vk_id,
@@ -36,8 +36,15 @@ async def authenticate_vk_student( #проверка подписи вк
             last_name=auth_data.last_name or ""
         )
         session.add(student)
-        await session.commit()  # Сохраняем в базу
-        await session.refresh(student)  # Обновляем объект, чтобы получить сгенерированный базой id (UUID)
+    else:
+        # обновляем имя если оно пришло с фронта
+        if auth_data.first_name:
+            student.first_name = auth_data.first_name
+        if auth_data.last_name is not None:
+            student.last_name = auth_data.last_name
 
-    #возвращаем профиль студента фронтенду (Pydantic сам превратит его в JSON)
+    await session.commit()  # Сохраняем/обновляем в базе
+    await session.refresh(student)
+
+    # возвращаем профиль студента фронтенду
     return student

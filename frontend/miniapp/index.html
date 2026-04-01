@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Lingua — Языковая школа</title>
+  <meta name="description" content="Запись на занятия, расписание и профиль студента языковой школы Lingua" />
+  <base href="/miniapp/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet" />
+  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+  <link rel="stylesheet" href="style.css?v=4" />
+</head>
+
+<body>
+  <!-- ===================== SCREEN: Home ===================== -->
+  <div id="screen-home" class="screen active">
+    <header class="app-header">
+      <div class="header-greeting">
+        <span class="header-label">Привет,</span>
+        <h1 class="header-name" id="home-student-name">Студент</h1>
+      </div>
+      <div class="header-avatar" id="home-avatar">С</div>
+    </header>
+
+    <main class="screen-content">
+      <!-- Calendar -->
+      <section class="section">
+        <div class="section-title-row">
+          <h2 class="section-title">Расписание</h2>
+          <span class="section-subtitle" id="calendar-month-label">Апрель</span>
+        </div>
+        <div class="calendar-card">
+          <div class="calendar-week-nav">
+            <button class="week-btn" id="week-prev" aria-label="Предыдущая неделя">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+            <div class="week-days" id="week-days"></div>
+            <button class="week-btn" id="week-next" aria-label="Следующая неделя">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upcoming sessions -->
+      <section class="section">
+        <div class="section-title-row">
+          <h2 class="section-title">Ближайшие занятия</h2>
+          <span class="badge-count" id="upcoming-count">0</span>
+        </div>
+        <div id="upcoming-list" class="booking-list">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+        <div id="upcoming-empty" class="empty-state hidden">
+          <span class="material-symbols-rounded empty-icon">event_busy</span>
+          <p>Нет предстоящих занятий</p>
+          <button class="btn-primary" onclick="navigate('booking')">Записаться</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================== SCREEN: Booking ===================== -->
+  <div id="screen-booking" class="screen">
+    <header class="app-header">
+      <h1 class="header-name">Запись</h1>
+      <span class="header-label" style="margin-top:4px">Выберите параметры</span>
+    </header>
+
+    <main class="screen-content">
+      <!-- Filter: Language -->
+      <section class="section">
+        <div class="filter-badge">01</div>
+        <h2 class="section-title filter-title">Выберите язык</h2>
+        <div id="language-list" class="filter-chips">
+          <div class="skeleton-chip"></div>
+          <div class="skeleton-chip"></div>
+          <div class="skeleton-chip"></div>
+        </div>
+      </section>
+
+      <!-- Filter: Teacher -->
+      <section class="section">
+        <div class="filter-badge">02</div>
+        <h2 class="section-title filter-title">Выберите преподавателя</h2>
+        <div id="teacher-list" class="filter-chips">
+          <div class="skeleton-chip"></div>
+          <div class="skeleton-chip"></div>
+        </div>
+      </section>
+
+      <!-- Filter: Date -->
+      <section class="section">
+        <div class="filter-badge">03</div>
+        <h2 class="section-title filter-title">Выберите дату</h2>
+        <div class="calendar-card" style="padding: 12px 0;">
+          <div class="calendar-week-nav">
+            <button class="week-btn" id="booking-week-prev" aria-label="Назад">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+            <div class="week-days" id="booking-week-days"></div>
+            <button class="week-btn" id="booking-week-next" aria-label="Вперёд">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Available lessons -->
+      <section class="section">
+        <h2 class="section-title">Доступные занятия</h2>
+        <div id="available-list" class="booking-list">
+          <p class="filter-hint">Выберите параметры выше</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================== SCREEN: Profile ===================== -->
+  <div id="screen-profile" class="screen">
+    <header class="app-header profile-header">
+      <div class="profile-hero">
+        <div class="profile-avatar-lg" id="profile-avatar">С</div>
+        <div>
+          <h1 class="profile-name" id="profile-name">Студент</h1>
+          <p class="profile-meta" id="profile-meta">Участник Lingua</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="screen-content">
+      <!-- Stats -->
+      <section class="section">
+        <h2 class="section-title">Статистика</h2>
+        <div class="stats-grid">
+          <div class="stat-card accent">
+            <span class="stat-value" id="stat-total">—</span>
+            <span class="stat-label">Всего занятий</span>
+          </div>
+          <div class="stat-card yellow">
+            <span class="stat-value" id="stat-upcoming">—</span>
+            <span class="stat-label">Предстоят</span>
+          </div>
+          <div class="stat-card red">
+            <span class="stat-value" id="stat-cancelled">—</span>
+            <span class="stat-label">Отменено</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active bookings summary -->
+      <section class="section">
+        <h2 class="section-title">Активные записи</h2>
+        <div id="profile-bookings" class="booking-list">
+          <div class="skeleton-card"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================== Bottom Nav ===================== -->
+  <nav class="bottom-nav" role="navigation" aria-label="Главная навигация">
+    <button class="nav-btn active" id="nav-home" onclick="navigate('home')" aria-label="Главная">
+      <span class="material-symbols-rounded nav-icon">home</span>
+      <span class="nav-label">Главная</span>
+    </button>
+    <button class="nav-btn" id="nav-booking" onclick="navigate('booking')" aria-label="Запись">
+      <span class="material-symbols-rounded nav-icon">calendar_month</span>
+      <span class="nav-label">Запись</span>
+    </button>
+    <button class="nav-btn" id="nav-profile" onclick="navigate('profile')" aria-label="Профиль">
+      <span class="material-symbols-rounded nav-icon">person</span>
+      <span class="nav-label">Профиль</span>
+    </button>
+  </nav>
+
+  <!-- ===================== Toast ===================== -->
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+  <!-- ===================== Cancel Modal ===================== -->
+  <div id="cancel-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h3 class="modal-title">Отменить занятие?</h3>
+      <p class="modal-body" id="modal-lesson-info">Это действие нельзя отменить.</p>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal()">Назад</button>
+        <button class="btn-danger" id="modal-confirm-btn">Отменить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=3"></script>
+</body>
+
+</html>
